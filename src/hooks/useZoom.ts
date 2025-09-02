@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ZoomIntegrationResponse, CreateMeetingRequest, CreateMeetingResponse } from '@/types/zoom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const API_BASE = 'https://multidrop-dev.ew.r.appspot.com/integrations/zoom';
 
@@ -7,18 +8,22 @@ export const useZoom = () => {
   const [zoomStatus, setZoomStatus] = useState<ZoomIntegrationResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const checkZoomStatus = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // For this POC, we'll simulate a JWT token
-      const mockToken = 'your-jwt-token-here';
+      if (!user?.accessToken) {
+        setError('Usuário não autenticado');
+        setZoomStatus(null);
+        return;
+      }
       
       const response = await fetch(`${API_BASE}/status`, {
         headers: {
-          'Authorization': `Bearer ${mockToken}`,
+          'Authorization': `Bearer ${user.accessToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -46,7 +51,7 @@ export const useZoom = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user?.accessToken]);
 
   const connectToZoom = useCallback(async (userId: string = '1') => {
     try {
@@ -64,13 +69,15 @@ export const useZoom = () => {
     try {
       setError(null);
       
-      // For this POC, we'll simulate a JWT token
-      const mockToken = 'your-jwt-token-here';
+      if (!user?.accessToken) {
+        setError('Usuário não autenticado');
+        return null;
+      }
       
       const response = await fetch(`${API_BASE}/meeting`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${mockToken}`,
+          'Authorization': `Bearer ${user.accessToken}`,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
@@ -100,11 +107,15 @@ export const useZoom = () => {
       setError(err instanceof Error ? err.message : 'Failed to create meeting');
       return null;
     }
-  }, []);
+  }, [user?.accessToken]);
 
   useEffect(() => {
-    checkZoomStatus();
-  }, [checkZoomStatus]);
+    if (user?.accessToken) {
+      checkZoomStatus();
+    } else {
+      setIsLoading(false);
+    }
+  }, [checkZoomStatus, user?.accessToken]);
 
   return {
     zoomStatus,

@@ -43,3 +43,26 @@ export interface CreateMeetingResponse {
   joinUrl?: string;
   startUrl?: string;
 }
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  firstName: string;
+  image: string;
+  language: string;
+  urlImage: string;
+  chatToken: string;
+  userViewPreference: any; // Pode ser tipado mais especificamente se necessário
+}
+
+export interface AuthContextType {
+  user: LoginResponse | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  isLoading: boolean;
+  error: string | null;
+}
