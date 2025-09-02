@@ -12,7 +12,7 @@ const Index = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConnectZoom = useCallback(() => {
-    connectToZoom('demo-user');
+    connectToZoom('1'); // Using user ID 1 for this POC
   }, [connectToZoom]);
 
   const handleCreateEvent = useCallback(async (eventData: EventFormData) => {
